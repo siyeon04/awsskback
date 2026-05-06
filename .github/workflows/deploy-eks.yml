@@ -37,6 +37,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Docker Build & Push
+        id: build-image
         env:
           ECR: ${{ secrets.ECR_BACKEND_URI }}
           TAG: ${{ github.sha }}
@@ -44,19 +45,26 @@ jobs:
           docker build -t $ECR:$TAG -t $ECR:latest .
           docker push $ECR:$TAG
           docker push $ECR:latest
+          echo "image=$ECR:$TAG" >> $GITHUB_OUTPUT
+
+      - name: Checkout Infra Repository
+        uses: actions/checkout@v3
+        with:
+          repository: siyeon04/awsskinfra
+          token: ${{ secrets.INFRA_GITHUB_TOKEN }}
+          path: infra-repo
 
       - name: Update Manifest
-        env:
-          ECR: ${{ secrets.ECR_BACKEND_URI }}
         run: |
-          sed -i "s|image:.*|image: $ECR:${{ github.sha }}|g" k8s/backend.yaml
+          cd infra-repo
+          sed -i "s|image:.*|image: ${{ steps.build-image.outputs.image }}|g" sample-app/back/k8s/backend.yaml
 
       - name: Commit and Push Changes
         run: |
+          cd infra-repo
           git config --global user.name "github-actions"
           git config --global user.email "action@github.com"
-          git remote set-url origin https://x-access-token:${{ secrets.INFRA_GITHUB_TOKEN }}@github.com/siyeon04/awsskback.git
-          git add k8s/backend.yaml
+          git add sample-app/back/k8s/backend.yaml
           if ! git diff-index --quiet HEAD; then
             git commit -m "chore: update backend image to ${{ github.sha }} [skip ci]"
             git push origin main
