@@ -57,7 +57,7 @@ jobs:
           ECR: ${{ secrets.ECR_BACKEND_URI }}
         run: |
           cd infra-repo
-          sed -i "s|image:.*|image: $ECR:${{ github.sha }}|g" sample-app/infra/argocd/../../../back/k8s/backend.yaml
+          sed -i "s|image:.*|image: $ECR:${{ github.sha }}|g" k8s/backend.yaml
 
       - name: Commit and Push Changes
         run: |
