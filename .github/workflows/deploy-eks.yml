@@ -56,15 +56,13 @@ jobs:
         env:
           ECR: ${{ secrets.ECR_BACKEND_URI }}
         run: |
-          cd infra-repo
           sed -i "s|image:.*|image: $ECR:${{ github.sha }}|g" k8s/backend.yaml
-
+          
       - name: Commit and Push Changes
         run: |
-          cd infra-repo
           git config --global user.name "github-actions"
           git config --global user.email "action@github.com"
-          git add .
+          git add k8s/backend.yaml
           if ! git diff-index --quiet HEAD; then
             git commit -m "chore: update backend image to ${{ github.sha }} [skip ci]"
             git push origin main
