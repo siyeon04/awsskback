@@ -57,7 +57,7 @@ jobs:
       - name: Update Manifest
         run: |
           cd infra-repo
-          sed -i "s|image:.*|image: ${{ steps.build-image.outputs.image }}|g" manifests/backend/backend.yaml
+          sed -i "s|image:.*|image: ${{ steps.build-image.outputs.image }}|g" manifests/backend/deployment.yaml
 
       - name: Commit and Push Changes
         run: |
